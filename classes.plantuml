@@ -1,0 +1,59 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class node0 as "abc.ABC" {
+   __slots__: 
+}
+class node4 as "abc.ABCMeta" {
+   cls: 
+}
+class node10 as "classes.Admin" {
+   admin_name: 
+}
+class node7 as "classes.League" {
+   league: 
+   League.Match: 
+   League.Fixture: 
+   League.RuleSet: 
+}
+class node8 as "classes.MatchOfficial" {
+   match_official_name: 
+}
+class node9 as "classes.Player" {
+   position: 
+   player_name: 
+}
+class node3 as "classes.Team" {
+   players: 
+   team_name: 
+   Team.TeamCaptain: 
+   Team.Formation: 
+   Team.Session: 
+}
+class node5 as "classes.TeamCaptain"
+class node6 as "classes.User" {
+   user_name: 
+}
+class object {
+   __doc__: 
+   __dict__: 
+   __module__: 
+   __annotations__: 
+}
+class node1 as "typing.Hashable"
+
+node0   ^-[#595959,plain]-  object 
+node10  ^-[#595959,plain]-  node6  
+node7   ^-[#595959,plain]-  object 
+node8   ^-[#595959,plain]-  node6  
+node9   ^-[#595959,plain]-  node6  
+node3   ^-[#595959,plain]-  object 
+node3   ^-[#595959,dashed]-  node1  
+node5   ^-[#595959,plain]-  node9  
+node5   ^-[#595959,plain]-  node3  
+node6   ^-[#595959,plain]-  node0  
+object  ^-[#595959,dashed]-  node1  
+@enduml
