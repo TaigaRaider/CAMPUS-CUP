@@ -1,7 +1,7 @@
-from typing import Any
-
 import time
 from abc import ABC, abstractmethod
+from typing import Any
+
 from rich.progress import track
 from rich.prompt import Prompt
 
@@ -54,110 +54,6 @@ class MatchOfficial(User):
         return f"Match official name:{self.match_official_name}"
 
 
-class League:
-    def __init__(self, league_name: str):
-        self.league = league_name
-
-    class Match:
-        def __init__(self, team1: Team, team2: Team):
-            self.match_team1 = team1
-            self.match_team2 = team2
-
-        def __str__(self):
-            pass
-
-
-        def __repr__(self):
-            pass
-
-        def start_match(self):
-            pass
-
-        def end_match(self):
-            pass
-
-
-        def pause_match(self):
-            pass
-
-
-        def resume_match(self):
-            pass
-
-
-        def extend_match(self):
-            pass
-
-
-        def report_match(self):
-            pass
-
-
-        def reschedule_match(self):
-            pass
-
-
-    class Fixture:
-        def __init__(self, title: str, team1: Team, team2: Team):
-            self.fixture_title = title
-            self.fixture_team1 = team1
-            self.fixture_team2 = team2
-
-
-
-        def __str__(self):
-            pass
-        def __repr__(self):
-            pass
-        def create_fixture(self):
-            pass
-        def cancel_fixture(self):
-            pass
-        def remove_fixture(self):
-            pass
-        def return_fixture(self):
-            pass
-
-
-    class RuleSet:
-        ruleSet: dict = {
-            "WIN" :"",
-            "DRAW" :"",
-            "LOSS" : "",
-            "OFFENCE" : ""
-        }
-
-        temp_ruleSet = ruleSet.copy()
-
-        def __init__(self, ruleset_name: str):
-            self.ruleset_name = ruleset_name
-
-
-        def update_ruleset(self):
-            for key, value in track(self.ruleSet.items(), description="Updating Ruleset..."):
-                value = Prompt.ask(f"What should be happen after a {key}")
-                self.ruleSet[key] = value
-
-
-        def validate_ruleset(self):
-            print(self.ruleSet)
-            confirmation = Prompt.ask("Is this your desired ruleset(True/False)? ")
-
-            match confirmation:
-                case ("True"):
-                    self.temp_ruleSet= {}
-                    print(f"Ruleset Successfully Updated!")
-
-                case ("False"):
-                    self.ruleSet= self.temp_ruleSet.copy()
-                    print("Reverting ruleset...")
-                    time.sleep(0.5)
-                    print(f"{self.ruleSet}\n Update Successfully Reverted!")
-
-                case _:
-                    print(f"Invalid Input")
-
-
 class Team:
     def __init__(self, team_name: str):
         self.team_name = team_name
@@ -171,8 +67,10 @@ class Team:
     def __repr__(self):
         return f"Team name: {self.team_name}\n Players: {self.players}"
 
+
     def __hash__(self) -> int:
         return hash(self.team_name)
+
 
     def __len__(self) -> int:
         return len(self.players)
@@ -225,7 +123,7 @@ class Team:
         for player in self.players:
             if player.player_name == player_name and player.position == position:
                 self.remove_player(player_name, position)
-                self.TeamCaptain(player_name, position, self)
+                self.TeamCaptain(player_name, position)
                 print(f"Player name: {player_name} \n")
                 message = f"{player} was Successfully Appointed as Team Captain!"
             # else:
@@ -234,11 +132,9 @@ class Team:
 
 
     class TeamCaptain(Player):
-        def __init__(self, team_captain_name: str, position: str, team: Team):
-            self.team_captain_name = team_captain_name
+        def __init__(self, team_captain_name: str, position: str):
+            self.team_captain_name = super().__init__(team_captain_name, self.position)
             self.position = "Team Captain "+ position
-            self.team = team
-
 
         def __eq__(self, other):
             if not isinstance(other, Player):
@@ -264,3 +160,99 @@ class Team:
             self.session_date = session_date
             self.session_time = session_time
 
+
+class League:
+    def __init__(self, league_name: str):
+        self.league = league_name
+
+    class Match:
+        def __init__(self, team1: Team, team2: Team):
+            self.match_team1 = team1
+            self.match_team2 = team2
+
+        def __str__(self):
+            pass
+
+        def __repr__(self):
+            pass
+
+        def start_match(self):
+            pass
+
+        def end_match(self):
+            pass
+
+        def pause_match(self):
+            pass
+
+        def resume_match(self):
+            pass
+
+        def extend_match(self):
+            pass
+
+        def report_match(self):
+            pass
+
+        def reschedule_match(self):
+            pass
+
+    class Fixture:
+        def __init__(self, title: str, team1: Team, team2: Team):
+            self.fixture_title = title
+            self.fixture_team1 = team1
+            self.fixture_team2 = team2
+
+        def __str__(self):
+            pass
+
+        def __repr__(self):
+            pass
+
+        def create_fixture(self):
+            pass
+
+        def cancel_fixture(self):
+            pass
+
+        def remove_fixture(self):
+            pass
+
+        def return_fixture(self):
+            pass
+
+    class RuleSet:
+        ruleSet: dict = {
+            "WIN": "",
+            "DRAW": "",
+            "LOSS": "",
+            "OFFENCE": ""
+        }
+
+        temp_ruleSet = ruleSet.copy()
+
+        def __init__(self, ruleset_name: str):
+            self.ruleset_name = ruleset_name
+
+        def update_ruleset(self):
+            for key, value in track(self.ruleSet.items(), description="Updating Ruleset..."):
+                value = Prompt.ask(f"What should be happen after a {key}")
+                self.ruleSet[key] = value
+
+        def validate_ruleset(self):
+            print(self.ruleSet)
+            confirmation = Prompt.ask("Is this your desired ruleset(True/False)? ")
+
+            match confirmation:
+                case ("True"):
+                    self.temp_ruleSet = {}
+                    print(f"Ruleset Successfully Updated!")
+
+                case ("False"):
+                    self.ruleSet = self.temp_ruleSet.copy()
+                    print("Reverting ruleset...")
+                    time.sleep(0.5)
+                    print(f"{self.ruleSet}\n Update Successfully Reverted!")
+
+                case _:
+                    print(f"Invalid Input")
