@@ -36,7 +36,6 @@ class Player(User):
         return self.player_name == other.player_name and self.position == other.position
 
 
-
 class Admin(User):
     def __init__(self, admin_name: str):
         self.admin_name = admin_name
@@ -184,8 +183,8 @@ class Team:
             return False
         return self.team_name == other.team_name
 
-    def find_in_team(self, player_name : str, position: str) -> bool:
 
+    def find_in_team(self, player_name : str, position: str) -> bool:
         for player in self.players:
             if player.player_name == player_name and player.position == position:
                 return True
@@ -225,33 +224,43 @@ class Team:
         message: str = ""
         for player in self.players:
             if player.player_name == player_name and player.position == position:
-                player.position = "Team Captain" + position
+                self.remove_player(player_name, position)
+                self.TeamCaptain(player_name, position, self)
+                print(f"Player name: {player_name} \n")
                 message = f"{player} was Successfully Appointed as Team Captain!"
+            # else:
+            #     raise ValueError(f"Player name: {player_name} not in Team!\n")
         return message
 
 
     class TeamCaptain(Player):
-        def __init__(self, team_captain_name: str, position: str, team_name: str):
-            self.team_captain_name = super().__init__(team_captain_name)
-            self.position = "Team Captain" + position
-            self.team_name = team_name
+        def __init__(self, team_captain_name: str, position: str, team: Team):
+            self.team_captain_name = team_captain_name
+            self.position = "Team Captain "+ position
+            self.team = team
+
+
+        def __eq__(self, other):
+            if not isinstance(other, Player):
+                return False
+            else:
+                return self.player_name == other.player_name and self.position == other.position
+
+
+        def __repr__(self):
+            pass
+
 
 
     class Formation:
-        def __init__(self, formation_name: str):
+        def __init__(self, formation_name: str, use_case: str):
             self.formation_name = formation_name
+            self.use_case = use_case
 
 
-    class Session:
-        def __init__(self, session_name: str):
+    class PracticeSession:
+        def __init__(self, session_name: str, session_date: str, session_time: str):
             self.session_name = session_name
+            self.session_date = session_date
+            self.session_time = session_time
 
-
-team = Team("Juggernaut FC")
-team.add_player("Mikel Arteta", "Midfielder")
-team.add_player("Mikel Obi", "Attacker")
-team.add_player("Sir Lancelot", "Midfielder")
-print(team.sys_fetch_squad())
-
-team.remove_player("Mikel Arteta", "Midfielder")
-team.remove_player("Mikel Arteta", "Midfielder")
