@@ -78,7 +78,7 @@ class Team:
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Team):
-            return False
+            return Fals
         return self.team_name == other.team_name
 
 
@@ -105,6 +105,7 @@ class Team:
             if player.player_name == player_name and player.position == position:
                 self.players.remove(player)
 
+    # findinteam return list index store in variable use to find player simplify search process
 
     def sys_fetch_squad(self):
         return list(self.players)
@@ -123,11 +124,14 @@ class Team:
         for player in self.players:
             if player.player_name == player_name and player.position == position:
                 self.remove_player(player_name, position)
-                self.TeamCaptain(player_name, position)
+                team_captain = self.TeamCaptain(player_name, position)
+
+                self.players.append(team_captain)
+
                 print(f"Player name: {player_name} \n")
                 message = f"{player} was Successfully Appointed as Team Captain!"
-            # else:
-            #     raise ValueError(f"Player name: {player_name} not in Team!\n")
+            else:
+                raise ValueError(f"Player name: {player_name} not in Team!\n")
         return message
 
 
