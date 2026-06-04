@@ -16,19 +16,16 @@ class User(ABC):
         return self.user_name
 
 
-
 class Player(User):
     def __init__(self, player_name: str, position: str):
-        self.player_name= player_name
+        self.player_name = player_name
         self.position = position
 
     def __str__(self):
         return f"{self.player_name}"
 
-
     def __repr__(self):
         return f"Player name:{self.player_name}\n Position: {self.position}\n"
-
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Player):
@@ -40,7 +37,6 @@ class Admin(User):
     def __init__(self, admin_name: str):
         self.admin_name = admin_name
 
-
     def __str__(self):
         return f"Admin name:{self.admin_name}"
 
@@ -49,7 +45,6 @@ class MatchOfficial(User):
     def __init__(self, match_name: str):
         self.match_official_name = match_name
 
-
     def __str__(self):
         return f"Match official name:{self.match_official_name}"
 
@@ -57,67 +52,66 @@ class MatchOfficial(User):
 class Team:
     def __init__(self, team_name: str):
         self.team_name = team_name
-        self.players:list[Player] = []
-
+        self.players: list[Player] = []
 
     def __str__(self):
         return f"Team name: {self.team_name}"
 
-
     def __repr__(self):
         return f"Team name: {self.team_name}\n Players: {self.players}"
-
 
     def __hash__(self) -> int:
         return hash(self.team_name)
 
-
     def __len__(self) -> int:
         return len(self.players)
 
-
     def __eq__(self, other) -> bool:
         if not isinstance(other, Team):
-            return Fals
+            return False
         return self.team_name == other.team_name
 
-
-    def find_in_team(self, player_name : str, position: str) -> bool:
+    def check_in_team(self, player_name: str, position: str) -> bool:
+        player: Player | Team.TeamCaptain
         for player in self.players:
             if player.player_name == player_name and player.position == position:
                 return True
             else:
                 return False
+
         return False
 
+    def find_in_team(self, player_name: str, position: str) -> int | None:
+        for player in self.players:
+            if player.player_name == player_name and player.position == position:
+                return self.players.index(player)
+            else:
+                if type(player) == self.TeamCaptain:
+                    return self.players.index(player)
+        return None
 
-    def add_player(self, player_name:str, position: str):
-        if not self.find_in_team(player_name, position):
+    def add_player(self, player_name: str, position: str):
+        if not self.check_in_team(player_name, position):
             new_player = Player(player_name, position)
             self.players.append(new_player)
             print(f"{new_player} was Successfully Added!")
         else:
             raise ValueError(f"{player_name} is already in the team!")
 
-
     def remove_player(self, player_name: str, position: str) -> None:
-        for player in  self.players:
+        for player in self.players:
             if player.player_name == player_name and player.position == position:
                 self.players.remove(player)
-
-    # findinteam return list index store in variable use to find player simplify search process
 
     def sys_fetch_squad(self):
         return list(self.players)
 
-
     def fetch_squad(self) -> Any | None:
         for player in self.players:
-            formatted_player = (f"{self.players.index(player)+1}. |\tName: {player.player_name}\t|\n"
+            formatted_player = (f"{self.players.index(player) + 1}. |\tName: {player.player_name}\t|\n"
                                 f"   |\tPosition: {player.position}\t|")
             print(formatted_player)
         print(f"\nSquad Fetch Complete!")
-
 
     def appoint_captain(self, player_name: str, position: str):
         message: str = ""
@@ -125,20 +119,15 @@ class Team:
             if player.player_name == player_name and player.position == position:
                 self.remove_player(player_name, position)
                 team_captain = self.TeamCaptain(player_name, position)
-
                 self.players.append(team_captain)
 
-                print(f"Player name: {player_name} \n")
                 message = f"{player} was Successfully Appointed as Team Captain!"
-            else:
-                raise ValueError(f"Player name: {player_name} not in Team!\n")
-        return message
 
+        return message
 
     class TeamCaptain(Player):
         def __init__(self, team_captain_name: str, position: str):
-            self.team_captain_name = super().__init__(team_captain_name, self.position)
-            self.position = "Team Captain "+ position
+            super().__init__(team_captain_name, position)
 
         def __eq__(self, other):
             if not isinstance(other, Player):
@@ -146,17 +135,13 @@ class Team:
             else:
                 return self.player_name == other.player_name and self.position == other.position
 
-
         def __repr__(self):
             pass
-
-
 
     class Formation:
         def __init__(self, formation_name: str, use_case: str):
             self.formation_name = formation_name
             self.use_case = use_case
-
 
     class PracticeSession:
         def __init__(self, session_name: str, session_date: str, session_time: str):

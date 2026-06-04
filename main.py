@@ -18,16 +18,16 @@ def main():
     team1.add_player("Allen", "SS")
     team1.add_player("Lamar", "GK")
 
-    team1.find_in_team("Jay", "RW")
-    team1.appoint_captain("Jay", "RW")
+    print(team1.appoint_captain("Jay", "RW"))
 
     team1.remove_player("Mikel", "RCB")
     team1.remove_player("Jason", "RB")
     team1.remove_player("taiwo", "LCB")
 
-    team1.find_in_team("Mikel", "RCB")
-    team1.find_in_team("Jason", "RB")
-    team1.find_in_team("Taiwo", "LCB")
+    print(team1.check_in_team("Jay", "RW"))
+    print(team1.check_in_team("Mikel", "RCB"))
+    print(team1.check_in_team("Jason", "RB"))
+    print(team1.check_in_team("Taiwo", "LCB"))
 
 
 
