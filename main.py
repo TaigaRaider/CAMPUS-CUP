@@ -29,7 +29,7 @@ def main():
     print(team1.check_in_team("Jason", "RB"))
     print(team1.check_in_team("Taiwo", "LCB"))
 
-
+    print(team1.fetch_squad())
 
 
 if __name__ == '__main__':

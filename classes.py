@@ -136,7 +136,7 @@ class Team:
                 return self.player_name == other.player_name and self.position == other.position
 
         def __repr__(self):
-            pass
+            return f"Team Captain name:{self.player_name}\n Position: {self.position}\n"
 
     class Formation:
         def __init__(self, formation_name: str, use_case: str):
