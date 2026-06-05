@@ -158,12 +158,13 @@ class League:
         def __init__(self, team1: Team, team2: Team):
             self.match_team1 = team1
             self.match_team2 = team2
+            self.match_status = ""
 
         def __str__(self):
-            pass
+            return f"{self.match_team1} vs {self.match_team2}"
 
         def __repr__(self):
-            pass
+            return f"Team 1:{self.match_team1}\nTeam 2:{self.match_team2}\nStatus:{self.match_status}"
 
         def start_match(self):
             pass
@@ -191,12 +192,13 @@ class League:
             self.fixture_title = title
             self.fixture_team1 = team1
             self.fixture_team2 = team2
+            self.fixture_status = ""
 
         def __str__(self):
-            pass
+            return f"{self.fixture_team1} vs {self.fixture_team2}"
 
         def __repr__(self):
-            pass
+            return f"Fixture: {self.fixture_title}Team 1:{self.fixture_team1}\nTeam 2:{self.fixture_team2}\nStatus:{self.fixture_status}"
 
         def create_fixture(self):
             pass
