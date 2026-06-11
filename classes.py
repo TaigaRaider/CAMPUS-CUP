@@ -136,7 +136,7 @@ class Team:
                 return self.player_name == other.player_name and self.position == other.position
 
         def __repr__(self):
-            return f"Team Captain name:{self.player_name}\n Position: {self.position}\n"
+            return f"Team Captain name: {self.player_name}\n Position: {self.position}\n"
 
     class Formation:
         def __init__(self, formation_name: str, use_case: str):
@@ -150,21 +150,35 @@ class Team:
             self.session_time = session_time
 
 
+def generate_match_id():
+    
+
+
 class League:
     def __init__(self, league_name: str):
         self.league = league_name
 
     class Match:
-        def __init__(self, team1: Team, team2: Team):
-            self.match_team1 = team1
-            self.match_team2 = team2
+        match_ids: list[int] = []
+
+        def __init__(self, home_team: Team, away_team: Team):
+            self.match_id = generate_match_id()
+            self.home_team = home_team
+            self.away_team = away_team
             self.match_status = ""
+            self.match_location = ""
+            self.home_team_score = 0
+            self.away_team_score = 0
+            self.match_officials :list[MatchOfficial] = []
+            self.start_time= ""
+            self.end_time = ""
+
 
         def __str__(self):
-            return f"{self.match_team1} vs {self.match_team2}"
+            return f"{self.home_team} vs {self.away_team}"
 
         def __repr__(self):
-            return f"Team 1:{self.match_team1}\nTeam 2:{self.match_team2}\nStatus:{self.match_status}"
+            return f"Team 1:{self.home_team}\nTeam 2:{self.away_team}\nStatus:{self.match_status}"
 
         def start_match(self):
             pass
@@ -187,30 +201,6 @@ class League:
         def reschedule_match(self):
             pass
 
-    class Fixture:
-        def __init__(self, title: str, team1: Team, team2: Team):
-            self.fixture_title = title
-            self.fixture_team1 = team1
-            self.fixture_team2 = team2
-            self.fixture_status = ""
-
-        def __str__(self):
-            return f"{self.fixture_team1} vs {self.fixture_team2}"
-
-        def __repr__(self):
-            return f"Fixture: {self.fixture_title}Team 1:{self.fixture_team1}\nTeam 2:{self.fixture_team2}\nStatus:{self.fixture_status}"
-
-        def create_fixture(self):
-            pass
-
-        def cancel_fixture(self):
-            pass
-
-        def remove_fixture(self):
-            pass
-
-        def return_fixture(self):
-            pass
 
     class RuleSet:
         ruleSet: dict = {
