@@ -71,15 +71,16 @@ class Team:
             return False
         return self.team_name == other.team_name
 
-    def check_in_team(self, player_name: str, position: str) -> bool:
-        player: Player | Team.TeamCaptain
-        for player in self.players:
-            if player.player_name == player_name and player.position == position:
+    def check_in_team(self, player: Player | TeamCaptain) -> bool | None:
+
+        for team_member in self.players:
+            if player == team_member:
                 return True
+                break
             else:
                 return False
 
-        return False
+        return None
 
     def find_in_team(self, player: Player) -> int | None:
         for team_member in self.players:
@@ -101,6 +102,7 @@ class Team:
         for team_member in self.players:
             if player == team_member:
                 self.players.remove(player)
+                break
 
     def sys_fetch_squad(self):
         return list(self.players)

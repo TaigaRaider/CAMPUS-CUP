@@ -1,5 +1,3 @@
-from turtledemo.minimal_hanoi import play
-
 from classes import *
 
 
@@ -8,32 +6,15 @@ def main():
     player1 = Player("Jay", "RW")
     player2 = Player("Jordan", "LW")
 
+    team1.add_player(player1)
+    team1.add_player(player2)
 
-    team1.add_player("Jay", "RW")
-    team1.add_player("Jordan", "LW")
-    team1.add_player("Shamika", "LW")
-    team1.add_player("Tadina", "CF")
-    team1.add_player("Divine", "CDM")
-    team1.add_player("David", "LM")
-    team1.add_player("Taiwo", "LCB")
-    team1.add_player("Mikel", "RCB")
-    team1.add_player("Jason", "RB")
-    team1.add_player("Michael", "RM")
-    team1.add_player("Johnson", "LAM")
-    team1.add_player("Yvonik", "CAM")
-    team1.add_player("Allen", "SS")
-    team1.add_player("Lamar", "GK")
+    # print(team1.appoint_captain("Jay", "RW"))
 
-    print(team1.appoint_captain("Jay", "RW"))
+    team1.remove_player(player1)
 
-    team1.remove_player("Mikel", "RCB")
-    team1.remove_player("Jason", "RB")
-    team1.remove_player("taiwo", "LCB")
-
-    print(team1.check_in_team("Jay", "RW"))
-    print(team1.check_in_team("Mikel", "RCB"))
-    print(team1.check_in_team("Jason", "RB"))
-    print(team1.check_in_team("Taiwo", "LCB"))
+    print(team1.check_in_team(player1))
+    print(team1.check_in_team(player2))
 
     print(team1.players)
 
