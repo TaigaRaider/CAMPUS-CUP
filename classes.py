@@ -81,26 +81,25 @@ class Team:
 
         return False
 
-    def find_in_team(self, player_name: str, position: str) -> int | None:
-        for player in self.players:
-            if player.player_name == player_name and player.position == position:
+    def find_in_team(self, player: Player) -> int | None:
+        for team_member in self.players:
+            if player == team_member:
                 return self.players.index(player)
             else:
                 if type(player) == self.TeamCaptain:
                     return self.players.index(player)
         return None
 
-    def add_player(self, player_name: str, position: str):
-        if not self.check_in_team(player_name, position):
-            new_player = Player(player_name, position)
-            self.players.append(new_player)
-            print(f"{new_player} was Successfully Added!")
+    def add_player(self,player: Player):
+        if not self.check_in_team(player):
+            self.players.append(player)
+            print(f"{player} was Successfully Added!")
         else:
-            raise ValueError(f"{player_name} is already in the team!")
+            raise ValueError(f"{player} is already in the team!")
 
-    def remove_player(self, player_name: str, position: str) -> None:
-        for player in self.players:
-            if player.player_name == player_name and player.position == position:
+    def remove_player(self, player: Player) -> None:
+        for team_member in self.players:
+            if player == team_member:
                 self.players.remove(player)
 
     def sys_fetch_squad(self):
@@ -113,6 +112,7 @@ class Team:
             print(formatted_player)
         print(f"\nSquad Fetch Complete!")
 
+
     def appoint_captain(self, player_name: str, position: str):
         message: str = ""
         for player in self.players:
@@ -124,6 +124,7 @@ class Team:
                 message = f"{player} was Successfully Appointed as Team Captain!"
 
         return message
+
 
     class TeamCaptain(Player):
         def __init__(self, team_captain_name: str, position: str):
@@ -150,8 +151,13 @@ class Team:
             self.session_time = session_time
 
 
-def generate_match_id():
-    pass
+def generate_match_id(match: League.Match)-> str:
+    unique_match_index: int = len(League.Match.match_ids) + 1
+    match_team_acr: str = match.home_team.team_name[0] + match.away_team.team_name[0]
+    match_league_acr: str = match.league_name
+
+    match_id= f"{match_team_acr}{match_league_acr}{unique_match_index}"
+    return match_id
 
 
 class League:
@@ -161,10 +167,11 @@ class League:
     class Match:
         match_ids: list[int] = []
 
-        def __init__(self, home_team: Team, away_team: Team):
+        def __init__(self, home_team: Team, away_team: Team, league_name: str):
             self.match_id = generate_match_id()
             self.home_team = home_team
             self.away_team = away_team
+            self.league_name = league_name
             self.match_status = ""
             self.match_location = ""
             self.home_team_score = 0

@@ -1,8 +1,14 @@
+from turtledemo.minimal_hanoi import play
+
 from classes import *
 
 
 def main():
     team1 = Team("Juggernaut FC")
+    player1 = Player("Jay", "RW")
+    player2 = Player("Jordan", "LW")
+
+
     team1.add_player("Jay", "RW")
     team1.add_player("Jordan", "LW")
     team1.add_player("Shamika", "LW")
