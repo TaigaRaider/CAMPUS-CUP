@@ -177,10 +177,10 @@ class League:
         match_ids: list[int] = []
 
         def __init__(self, home_team: Team, away_team: Team, league_name: str):
-            self.match_id = self.generate_match_id()
             self.home_team = home_team
             self.away_team = away_team
             self.league_name = league_name
+            self.match_id = self.generate_match_id()
             self.match_status = ""
             self.match_location = ""
             self.home_team_score = 0
@@ -198,6 +198,7 @@ class League:
 
         def start_match(self):
             pass
+
         def generate_match_id(self)-> str:
             unique_match_index: int = len(League.Match.match_ids) + 1
             match_team_acr: str = self.home_team.team_name[0] + self.away_team.team_name[0]
@@ -205,6 +206,14 @@ class League:
 
             match_id= f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
             return match_id
+
+            # unique_match_index: str = str(len(League.Match.match_ids) + 1)
+            # match_team_acr: str = str(self.home_team.__hash__()) + str(self.away_team.__hash__())
+            # match_league_acr: str = self.league_name
+            #
+            # match_id= f"{match_team_acr[1:5]}{match_league_acr.strip()}{unique_match_index[0:2]}"
+            # return match_id
+
 
 
         def end_match(self):
@@ -261,3 +270,6 @@ class League:
 
                 case _:
                     print(f"Invalid Input")
+
+
+print(League.Match(Team("Jug"), Team("Tug"), League("Test League").league).match_id)
