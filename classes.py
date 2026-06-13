@@ -186,7 +186,6 @@ class League:
         ACTIVE = "ACTIVE"
         CONCLUDED = "CONCLUDED"
 
-
     class Match:
         match_ids: list[int] = []
 
