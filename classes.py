@@ -5,6 +5,8 @@ from typing import Any
 from rich.progress import track
 from rich.prompt import Prompt
 
+from enum import Enum
+
 
 class User(ABC):
     @abstractmethod
@@ -89,6 +91,8 @@ class Team:
                 if type(player) == self.TeamCaptain:
                     return self.players.index(player)
         return None
+    
+    #time to rethink: do not instantiate the Player inside the Team. Instead, the Player is created independently (e.g., when they sign up for the app) and passed into the Team via a method.
 
     def add_player(self, player_name: str, position: str):
         if not self.check_in_team(player_name, position):
@@ -155,8 +159,18 @@ def generate_match_id():
 
 
 class League:
-    def __init__(self, league_name: str):
-        self.league = league_name
+    def __init__(self, league_name: str, league_size: int):
+        self.league_name = league_name
+        self.league_size = league_size
+        self.status = None
+        self.matches: list[League.Match] = []
+
+
+    class Status(Enum):
+        REGISTERING = "REGISTERED"
+        ACTIVE = "ACTIVE"
+        CONCLUDED = "CONCLUDED"
+
 
     class Match:
         match_ids: list[int] = []
