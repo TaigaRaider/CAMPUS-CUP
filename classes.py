@@ -74,6 +74,21 @@ class Team:
             return False
         return self.team_name == other.team_name
 
+
+    class TeamCaptain(Player):
+        def __init__(self, team_captain_name: str, position: str):
+            super().__init__(team_captain_name, position)
+
+        def __eq__(self, other):
+            if not isinstance(other, Player):
+                return False
+            else:
+                return self.player_name == other.player_name and self.position == other.position
+
+        def __repr__(self):
+            return f"Team Captain name: {self.player_name}\n Position: {self.position}\n"
+
+
     def check_in_team(self, player: Player | TeamCaptain) -> bool | None:
         for team_member in self.players:
             if player == team_member:
@@ -93,7 +108,7 @@ class Team:
                     return self.players.index(player)
         return None
     
-    #time to rethink: do not instantiate the Player inside the Team. Instead, the Player is created independently (e.g., when they sign up for the app) and passed into the Team via a method.
+    #Time to rethink: do not instantiate the Player inside the Team. Instead, the Player is created independently (e.g., when they sign up for the app) and passed into the Team via a method.
 
     def add_player(self,player: Player):
         if not self.check_in_team(player):
@@ -139,18 +154,7 @@ class Team:
         return message
 
 
-    class TeamCaptain(Player):
-        def __init__(self, team_captain_name: str, position: str):
-            super().__init__(team_captain_name, position)
 
-        def __eq__(self, other):
-            if not isinstance(other, Player):
-                return False
-            else:
-                return self.player_name == other.player_name and self.position == other.position
-
-        def __repr__(self):
-            return f"Team Captain name: {self.player_name}\n Position: {self.position}\n"
 
     class Formation:
         def __init__(self, formation_name: str, use_case: str):
@@ -164,13 +168,13 @@ class Team:
             self.session_time = session_time
 
 
-def generate_match_id(match: League.Match)-> str:
-    unique_match_index: int = len(League.Match.match_ids) + 1
-    match_team_acr: str = match.home_team.team_name[0] + match.away_team.team_name[0]
-    match_league_acr: str = match.league_name
-
-    match_id= f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
-    return match_id
+# def generate_match_id(match: League.Match)-> str:
+#     unique_match_index: int = len(League.Match.match_ids) + 1
+#     match_team_acr: str = match.home_team.team_name[0] + match.away_team.team_name[0]
+#     match_league_acr: str = match.league_name
+#
+#     match_id= f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
+#     return match_id
 
 
 class League:
@@ -285,4 +289,4 @@ class League:
                     print(f"Invalid Input")
 
 
-print(League.Match(Team("Jug"), Team("Tug"), League("Test League").league).match_id)
+print(League.Match(Team("Jug"), Team("Tug"), League("Test League", 4).league_name).match_id)
