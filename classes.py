@@ -283,7 +283,7 @@ class League:
                     self.ruleSet = self.temp_ruleSet.copy()
                     print("Reverting ruleset...")
                     time.sleep(0.5)
-                    print(f"{self.ruleSet}\n Update Successfully Reverted!")
+                    print(f"{self.ruleSet}\nUpdate Successfully Reverted!")
 
                 case _:
                     print(f"Invalid Input")
