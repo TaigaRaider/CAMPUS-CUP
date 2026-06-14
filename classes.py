@@ -2,7 +2,6 @@ import time
 from abc import ABC, abstractmethod
 from typing import Any
 
-import colorama
 from rich.progress import track
 from rich.prompt import Prompt
 
@@ -21,7 +20,7 @@ class User(ABC):
 
 class Player(User):
     def __init__(self, player_name: str, position: str):
-        self.player_name = player_name
+        self.player_name = super().__init__(player_name)
         self.position = position
 
     def __str__(self):
@@ -141,7 +140,7 @@ class Team:
                 pass
             if player == team_player  and type(team_player) != Team.TeamCaptain:
                 self.remove_player(player)
-                team_captain = self.TeamCaptain(player.player_name, player.position)
+                team_captain = self.TeamCaptain(player.user_name, player.position)
                 self.players.append(team_captain)
 
 
