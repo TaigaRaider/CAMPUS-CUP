@@ -54,19 +54,20 @@ class MatchOfficial(User):
 class Team:
     def __init__(self, team_name: str):
         self.team_name = team_name
-        self.players: list[Player] = []
+        self.roster: list[Player] = []
+        self.captain = None
 
     def __str__(self):
         return f"Team name: {self.team_name}"
 
     def __repr__(self):
-        return f"Team name: {self.team_name}\n Players: {self.players}"
+        return f"Team name: {self.team_name}\n Players: {self.roster}"
 
     def __hash__(self) -> int:
         return hash(self.team_name)
 
     def __len__(self) -> int:
-        return len(self.players)
+        return len(self.roster)
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Team):
@@ -74,22 +75,8 @@ class Team:
         return self.team_name == other.team_name
 
 
-    class TeamCaptain(Player):
-        def __init__(self, team_captain_name: str, position: str):
-            super().__init__(team_captain_name, position)
-
-        def __eq__(self, other):
-            if not isinstance(other, Player):
-                return False
-            else:
-                return self.player_name == other.player_name and self.position == other.position
-
-        def __repr__(self):
-            return f"Team Captain name: {self.player_name}\n Position: {self.position}\n"
-
-
-    def check_in_team(self, player: Player | TeamCaptain) -> bool | None:
-        for team_member in self.players:
+    def check_in_team(self, player: Player) -> bool | None:
+        for team_member in self.roster:
             if player == team_member:
                 return True
             else:
@@ -97,62 +84,40 @@ class Team:
 
         return None
 
-
     def find_in_team(self, player: Player) -> int | None:
-        for team_member in self.players:
+        for team_member in self.roster:
             if player == team_member:
-                return self.players.index(player)
-            else:
-                if type(player) == self.TeamCaptain:
-                    return self.players.index(player)
+                return self.roster.index(player)
         return None
-    
-    #Time to rethink: do not instantiate the Player inside the Team. Instead, the Player is created independently (e.g., when they sign up for the app) and passed into the Team via a method.
 
-    def add_player(self,player: Player):
+    def add_player(self, player: Player):
         if not self.check_in_team(player):
-            self.players.append(player)
+            self.roster.append(player)
             print(f"{player} was Successfully Added!")
         else:
             raise ValueError(f"{player} is already in the team!")
 
     def remove_player(self, player: Player) -> None:
-        for team_member in self.players:
+        for team_member in self.roster:
             if player == team_member:
-                self.players.remove(player)
+                self.roster.remove(player)
                 break
 
     def sys_fetch_squad(self):
-        return list(self.players)
+        return list(self.roster)
 
     def fetch_squad(self) -> Any | None:
-        for player in self.players:
-            formatted_player = (f"{self.players.index(player) + 1}. |\tName: {player.player_name}\t|\n"
+        for player in self.roster:
+            formatted_player = (f"{self.roster.index(player) + 1}. |\tName: {player.player_name}\t|\n"
                                 f"   |\tPosition: {player.position}\t|")
             print(formatted_player)
         print(f"\nSquad Fetch Complete!")
 
-
-    def appoint_team_captain(self, player: Player | TeamCaptain):
-        message: str = ""
-        for team_player in self.players:
-            if  type(team_player) == Team.TeamCaptain:
-                pass
-            if player == team_player  and type(team_player) != Team.TeamCaptain:
-                self.remove_player(player)
-                team_captain = self.TeamCaptain(player.user_name, player.position)
-                self.players.append(team_captain)
-
-
-                message = f"{player} was Successfully Appointed as Team Captain!"
-                break
-
-            elif type(player) == self.TeamCaptain:
-                message = f"{player} is already a Team Captain!"
-
-        return message
-
-
+    def appoint_team_captain(self, target_player: Player):
+        if not self.check_in_team(target_player):
+            print(f"Target Player {target_player} Not in Roster!")
+        else:
+            self.captain = target_player
 
 
     class Formation:
@@ -167,22 +132,12 @@ class Team:
             self.session_time = session_time
 
 
-# def generate_match_id(match: League.Match)-> str:
-#     unique_match_index: int = len(League.Match.match_ids) + 1
-#     match_team_acr: str = match.home_team.team_name[0] + match.away_team.team_name[0]
-#     match_league_acr: str = match.league_name
-#
-#     match_id= f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
-#     return match_id
-
-
 class League:
     def __init__(self, league_name: str, league_size: int):
         self.league_name = league_name
         self.league_size = league_size
         self.status = None
         self.matches: list[League.Match] = []
-
 
     class Status(Enum):
         REGISTERING = "REGISTERED"
@@ -201,10 +156,9 @@ class League:
             self.match_location = ""
             self.home_team_score = 0
             self.away_team_score = 0
-            self.match_officials :list[MatchOfficial] = []
-            self.start_time= ""
+            self.match_officials: list[MatchOfficial] = []
+            self.start_time = ""
             self.end_time = ""
-
 
         def __str__(self):
             return f"{self.home_team} vs {self.away_team}"
@@ -215,12 +169,12 @@ class League:
         def start_match(self):
             pass
 
-        def generate_match_id(self)-> str:
+        def generate_match_id(self) -> str:
             unique_match_index: int = len(League.Match.match_ids) + 1
             match_team_acr: str = self.home_team.team_name[0] + self.away_team.team_name[0]
             match_league_acr: str = self.league_name
 
-            match_id= f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
+            match_id = f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
             return match_id
 
             # unique_match_index: str = str(len(League.Match.match_ids) + 1)
@@ -229,8 +183,6 @@ class League:
             #
             # match_id= f"{match_team_acr[1:5]}{match_league_acr.strip()}{unique_match_index[0:2]}"
             # return match_id
-
-
 
         def end_match(self):
             pass
@@ -249,7 +201,6 @@ class League:
 
         def reschedule_match(self):
             pass
-
 
     class RuleSet:
         ruleSet: dict = {

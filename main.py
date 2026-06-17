@@ -31,7 +31,7 @@ def main():
     # print(team1.check_in_team(player2))
     # print(team1.check_in_team(player3))
     #
-    # print(team1.players)
+    # print(team1.roster)
 
 
 if __name__ == '__main__':
