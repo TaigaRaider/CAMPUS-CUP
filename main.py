@@ -23,16 +23,5 @@ def main():
     print(league.status)
 
 
-
-
-
-
-    # print(team1.check_in_team(player1))
-    # print(team1.check_in_team(player2))
-    # print(team1.check_in_team(player3))
-    #
-    # print(team1.roster)
-
-
 if __name__ == '__main__':
     main()
