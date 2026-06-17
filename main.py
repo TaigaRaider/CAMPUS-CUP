@@ -18,9 +18,9 @@ def main():
 
     team1.remove_player(player1)
 
-    league= League("Premier League")
-    match1 = league.Match(team1, team2, league.league)
-    print(match1.match_id)
+    league= League("Premier League", 3)
+    match1 = league.Match(team1, team2, league.league_name)
+    print(league.status)
 
 
 

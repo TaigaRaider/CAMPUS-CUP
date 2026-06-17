@@ -136,13 +136,17 @@ class League:
     def __init__(self, league_name: str, league_size: int):
         self.league_name = league_name
         self.league_size = league_size
-        self.status = League.Status.UNREGISTERED.value
+        self.status = League.Status.REGISTERING.value
         self.matches: list[League.Match] = []
+
+
     def update_league_status(self, new_status):
+        pass
+
 
     class Status(Enum):
-        UNREGISTERED = "UNREGISTERED"
-        REGISTERING = "REGISTERED"
+        REGISTERING = "REGISTERING"
+        REGISTERED = "REGISTERED"
         ACTIVE = "ACTIVE"
         CONCLUDED = "CONCLUDED"
 
