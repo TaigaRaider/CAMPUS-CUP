@@ -136,10 +136,12 @@ class League:
     def __init__(self, league_name: str, league_size: int):
         self.league_name = league_name
         self.league_size = league_size
-        self.status = None
+        self.status = League.Status.UNREGISTERED.value
         self.matches: list[League.Match] = []
+    def update_league_status(self, new_status):
 
     class Status(Enum):
+        UNREGISTERED = "UNREGISTERED"
         REGISTERING = "REGISTERED"
         ACTIVE = "ACTIVE"
         CONCLUDED = "CONCLUDED"
@@ -152,13 +154,16 @@ class League:
             self.away_team = away_team
             self.league_name = league_name
             self.match_id = self.generate_match_id()
+
             self.match_status = ""
             self.match_location = ""
+            self.match_datetime = ""
+            self.start_time = ""
+            self.end_time = ""
+
             self.home_team_score = 0
             self.away_team_score = 0
             self.match_officials: list[MatchOfficial] = []
-            self.start_time = ""
-            self.end_time = ""
 
         def __str__(self):
             return f"{self.home_team} vs {self.away_team}"
@@ -199,8 +204,16 @@ class League:
         def report_match(self):
             pass
 
-        def reschedule_match(self):
-            pass
+        def reschedule_match(self, new_time = "00:00"):
+
+            """ query schedule and check if a match is holding at the new selected date time and  venue"""
+
+            if self.match_status != "COMPLETED":
+                new_time = Prompt.ask(f"Enter a new match date and time in the order DD-MM-YYYY HH:MM" )
+                self.match_datetime = new_time
+
+            """if none, assign match to new date"""
+
 
     class RuleSet:
         ruleSet: dict = {
@@ -238,5 +251,3 @@ class League:
                 case _:
                     print(f"Invalid Input")
 
-
-print(League.Match(Team("Jug"), Team("Tug"), League("Test League", 4).league_name).match_id)
