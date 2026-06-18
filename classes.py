@@ -154,11 +154,19 @@ class League:
     def populate_league(self):
         pass
 
-    def population_check(self):
-        if len(self.teams) == 0:
-            self.populate_league()
+    def population_check(self)-> bool:
+        """Helper method to encapsulate population check"""
+        if len(self.teams) < self.league_size:
+            if len(self.teams) == 0:
+                self.populate_league()
+                return False
+            else:
+                 return False
         elif len(self.teams) == self.league_size:
             return True
+
+        return False
+
 
     def update_league_status(self, new_status):
         pass
@@ -229,8 +237,7 @@ class League:
             pass
 
         def reschedule_match(self, new_time = "00:00"):
-
-            """ query schedule and check if a match is holding at the new selected date time and  venue"""
+            """Query schedule and check if a match is holding at the newly selected date time and venue"""
 
             if self.match_status != "COMPLETED":
                 new_time = Prompt.ask(f"Enter a new match date and time in the order DD-MM-YYYY HH:MM" )
