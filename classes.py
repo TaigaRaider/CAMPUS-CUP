@@ -151,14 +151,17 @@ class League:
         self.teams: list[Team] = []
 
 
-    def populate_league(self):
-        pass
+    def populate_league(self, deficit: int):
+        for i in range(deficit):
+            team_name = Prompt.ask(f"Enter the name of the {i+1} team")
+            team = Team(team_name)
+            self.teams.append(team)
 
     def population_check(self)-> bool:
         """Helper method to encapsulate population check"""
         if len(self.teams) < self.league_size:
             if len(self.teams) == 0:
-                self.populate_league()
+                self.populate_league(self.league_size)
                 return False
             else:
                  return False
