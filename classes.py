@@ -10,8 +10,9 @@ from enum import Enum
 
 class User(ABC):
     @abstractmethod
-    def __init__(self, user_name: str):
+    def __init__(self, user_name: str, is_admin: bool):
         self.user_name = user_name
+        self.is_admin = is_admin
 
     @abstractmethod
     def __str__(self):
@@ -19,8 +20,8 @@ class User(ABC):
 
 
 class Player(User):
-    def __init__(self, player_name: str, position: str):
-        self.player_name = super().__init__(player_name)
+    def __init__(self, player_name: str, position: str, is_admin):
+        self.player_name = super().__init__(player_name, is_admin)
         self.position = position
 
     def __str__(self):
@@ -35,20 +36,13 @@ class Player(User):
         return self.player_name == other.player_name and self.position == other.position
 
 
-class Admin(User):
-    def __init__(self, admin_name: str):
-        self.admin_name = admin_name
-
-    def __str__(self):
-        return f"Admin name:{self.admin_name}"
-
 
 class MatchOfficial(User):
-    def __init__(self, match_name: str):
-        self.match_official_name = match_name
+    def __init__(self, match_official_name: str):
+        super().__init__(match_official_name, is_admin = False)
 
     def __str__(self):
-        return f"Match official name:{self.match_official_name}"
+        return f"Match official name:{super().user_name}"
 
 
 class Team:
