@@ -166,20 +166,24 @@ class League:
         self.sport = sport.capitalize()
 
 
-    def populate_league(self, deficit: int):
+    def populate_league(self,actor: User, deficit: int):
+        """Guarded method: Only Administrators can manage League states"""
+        if not check_admin(actor):
+            raise PermissionError(f"Only Administrators can manage league states")
         for i in range(deficit):
-            team_name = Prompt.ask(f"Enter the name of the {i+1} team")
+            team_name = Prompt.ask(f"Enter the name of the team #{i+1}")
             team = Team(team_name)
             self.teams.append(team)
 
-    def population_check(self)-> bool:
+    def population_check(self, actor: User)-> bool:
         """Helper method to encapsulate population check"""
         if len(self.teams) < self.league_size:
             if len(self.teams) == 0:
-                self.populate_league(self.league_size)
-                return False
+                self.populate_league(actor, self.league_size)
+                return True
             else:
-                 return False
+                self.populate_league(actor, self.league_size - len(self.teams))
+                return True
         elif len(self.teams) == self.league_size:
             return True
 
