@@ -1,38 +1,36 @@
 import time
-from abc import ABC, abstractmethod
 
 from rich.progress import track
 from rich.prompt import Prompt
 
-from enum import Enum
+from enum import StrEnum
 
 
-class User(ABC):
-    @abstractmethod
+class User:
     def __init__(self, user_name: str, is_admin: bool):
         self.user_name = user_name
         self.is_admin = is_admin
 
-    @abstractmethod
     def __str__(self):
         return self.user_name
 
 
 class Player(User):
     def __init__(self, player_name: str, position: str, is_admin):
-        self.player_name = super().__init__(player_name, is_admin)
+        super().__init__(player_name, is_admin)
         self.position = position
+        self._teams: list[Team] = []
 
     def __str__(self):
-        return f"{self.player_name}"
+        return f"{super().user_name}"
 
     def __repr__(self):
-        return f"Player name:{self.player_name}\n Position: {self.position}\n"
+        return f"Player name:{super().user_name}\n Position: {super().user_name}\n"
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Player):
             return False
-        return self.player_name == other.player_name and self.position == other.position
+        return super().user_name == other.user_name and self.position == other.position
 
 
 
@@ -86,7 +84,7 @@ class Team:
                 return self.roster.index(player)
         return None
 
-    def add_player(self, actor: Player, player: Player):
+    def add_player(self, actor: User | Player, player: Player):
         """Guarded method: Only Captains can add players"""
         if not self.is_captain(actor):
             raise PermissionError(f"You do not have permission to add players")
@@ -97,9 +95,9 @@ class Team:
         else:
             raise ValueError(f"{player} is already in the team!")
 
-    def remove_player(self,actor: Player, player: Player) -> None:
+    def remove_player(self,actor: User | Player, player: Player) -> None:
         """Guarded method: Only Captains can remove players"""
-        if not self.is_captain(actor):
+        if not self.is_captain(actor) or check_admin(actor):
             raise PermissionError(f"You do not have permission to remove players")
 
         for team_member in self.roster:
@@ -112,12 +110,16 @@ class Team:
 
     def fetch_squad(self):
         for player in self.roster:
-            formatted_player = (f"{self.roster.index(player) + 1}. |\tName: {player.player_name}\t|\n"
+            formatted_player = (f"{self.roster.index(player) + 1}. |\tName: {player.user_name}\t|\n"
                                 f"   |\tPosition: {player.position}\t|")
             print(formatted_player)
         print(f"\nSquad Fetch Complete!")
 
-    def appoint_team_captain(self, target_player: Player):
+    def appoint_team_captain(self, actor: User | Player, target_player: Player):
+        """Guarded method: Only Captains or Administrators can change team Settings"""
+        if not self.is_captain(actor) or check_admin(actor):
+            raise PermissionError(f"You do not have Permission to appoint captains!")
+
         if not self.check_in_team(target_player):
             raise ValueError(f"Target Player {target_player} Not in Roster!")
         else:
@@ -140,8 +142,9 @@ class League:
     def __init__(self, league_name: str, league_size: int):
         self.league_name = league_name
         self.league_size = league_size
-        self.status = League.Status.REGISTERING.value
+        self.status = League.LeagueStatus.REGISTERING
         self.matches: list[League.Match] = []
+        self.registered_match_officials : list[MatchOfficial] = []
         self.teams: list[Team] = []
 
 
@@ -169,7 +172,7 @@ class League:
         pass
 
 
-    class Status(Enum):
+    class LeagueStatus(StrEnum):
         REGISTERING = "REGISTERING"
         REGISTERED = "REGISTERED"
         ACTIVE = "ACTIVE"
@@ -178,13 +181,18 @@ class League:
     class Match:
         match_ids: list[int] = []
 
-        def __init__(self, home_team: Team, away_team: Team, league_name: str):
+        class MatchStatus(StrEnum):
+            PENDING = "PENDING"
+            ACTIVE = "ACTIVE"
+            CONCLUDED = "CONCLUDED"
+
+        def __init__(self, home_team: Team, away_team: Team, container_league: League):
             self.home_team = home_team
             self.away_team = away_team
-            self.league_name = league_name
+            self.container_league = container_league
             self.match_id = self.generate_match_id()
 
-            self.match_status = ""
+            self.match_status = League.Match.MatchStatus.PENDING
             self.match_location = ""
             self.match_datetime = ""
             self.start_time = ""
@@ -218,6 +226,29 @@ class League:
             # match_id= f"{match_team_acr[1:5]}{match_league_acr.strip()}{unique_match_index[0:2]}"
             # return match_id
 
+        def is_registered_official(self, official: MatchOfficial):
+            """
+            Helper method: To encapsulate check for REGISTERED Match Officials
+            Note: ONLY match officials that have been explicitly included in a League's Match Official list are deemed REGISTERED!
+            """
+            if type(official) == MatchOfficial and official in League.registered_match_officials:
+                return True
+            else:
+                raise False
+
+
+        def appoint_officials(self, actor: User, *args: MatchOfficial):
+            """Guarded method: Only Registered Administrators can appoint Match Officials """
+            if not check_admin(actor):
+                raise PermissionError(f"Only Registered Administrators can appoint Match Officials")
+
+            for official in args:
+                if not self.is_registered_official(official):
+                    raise ValueError(f"{official.user_name} is not a registered Official")
+
+                self.match_officials.append(official)
+
+
         def end_match(self):
             pass
 
@@ -233,7 +264,7 @@ class League:
         def report_match(self):
             pass
 
-        def reschedule_match(self, new_time = "00:00"):
+        def reschedule_match(self, new_time: str):
             """Query schedule and check if a match is holding at the newly selected date time and venue"""
 
             if self.match_status != "COMPLETED":
@@ -279,3 +310,7 @@ class League:
                 case _:
                     print(f"Invalid Input")
 
+
+def check_admin(actor):
+    """Helper method: To encapsulate Admin check"""
+    return actor.is_admin
