@@ -1,6 +1,5 @@
 import time
 from abc import ABC, abstractmethod
-from typing import Any
 
 from rich.progress import track
 from rich.prompt import Prompt
@@ -68,30 +67,41 @@ class Team:
             return False
         return self.team_name == other.team_name
 
+    def is_captain(self, player: Player)-> bool:
+        """Helper method to encapsulate captaincy check"""
+        return player == self.captain
 
     def check_in_team(self, player: Player) -> bool | None:
+        """Helper method to encapsulate membership check"""
         for team_member in self.roster:
             if player == team_member:
                 return True
-            else:
-                return False
 
         return None
 
     def find_in_team(self, player: Player) -> int | None:
+        """Helper method to encapsulate membership data lookup"""
         for team_member in self.roster:
             if player == team_member:
                 return self.roster.index(player)
         return None
 
-    def add_player(self, player: Player):
+    def add_player(self, actor: Player, player: Player):
+        """Guarded method: Only Captains can add players"""
+        if not self.is_captain(actor):
+            raise PermissionError(f"You do not have permission to add players")
+
         if not self.check_in_team(player):
             self.roster.append(player)
             print(f"{player} was Successfully Added!")
         else:
             raise ValueError(f"{player} is already in the team!")
 
-    def remove_player(self, player: Player) -> None:
+    def remove_player(self,actor: Player, player: Player) -> None:
+        """Guarded method: Only Captains can remove players"""
+        if not self.is_captain(actor):
+            raise PermissionError(f"You do not have permission to remove players")
+
         for team_member in self.roster:
             if player == team_member:
                 self.roster.remove(player)
@@ -100,7 +110,7 @@ class Team:
     def sys_fetch_squad(self):
         return list(self.roster)
 
-    def fetch_squad(self) -> Any | None:
+    def fetch_squad(self):
         for player in self.roster:
             formatted_player = (f"{self.roster.index(player) + 1}. |\tName: {player.player_name}\t|\n"
                                 f"   |\tPosition: {player.position}\t|")
@@ -109,7 +119,7 @@ class Team:
 
     def appoint_team_captain(self, target_player: Player):
         if not self.check_in_team(target_player):
-            print(f"Target Player {target_player} Not in Roster!")
+            raise ValueError(f"Target Player {target_player} Not in Roster!")
         else:
             self.captain = target_player
 
@@ -132,6 +142,27 @@ class League:
         self.league_size = league_size
         self.status = League.Status.REGISTERING.value
         self.matches: list[League.Match] = []
+        self.teams: list[Team] = []
+
+
+    def populate_league(self, deficit: int):
+        for i in range(deficit):
+            team_name = Prompt.ask(f"Enter the name of the {i+1} team")
+            team = Team(team_name)
+            self.teams.append(team)
+
+    def population_check(self)-> bool:
+        """Helper method to encapsulate population check"""
+        if len(self.teams) < self.league_size:
+            if len(self.teams) == 0:
+                self.populate_league(self.league_size)
+                return False
+            else:
+                 return False
+        elif len(self.teams) == self.league_size:
+            return True
+
+        return False
 
 
     def update_league_status(self, new_status):
@@ -203,8 +234,7 @@ class League:
             pass
 
         def reschedule_match(self, new_time = "00:00"):
-
-            """ query schedule and check if a match is holding at the new selected date time and  venue"""
+            """Query schedule and check if a match is holding at the newly selected date time and venue"""
 
             if self.match_status != "COMPLETED":
                 new_time = Prompt.ask(f"Enter a new match date and time in the order DD-MM-YYYY HH:MM" )
