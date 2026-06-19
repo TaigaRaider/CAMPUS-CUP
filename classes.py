@@ -1,9 +1,21 @@
+from __future__ import annotations
 import time
 
 from rich.progress import track
 from rich.prompt import Prompt
 
 from enum import StrEnum
+
+class LeagueStatus(StrEnum):
+    REGISTERING = "REGISTERING"
+    REGISTERED = "REGISTERED"
+    ACTIVE = "ACTIVE"
+    CONCLUDED = "CONCLUDED"
+
+class MatchStatus(StrEnum):
+    PENDING = "PENDING"
+    ACTIVE = "ACTIVE"
+    CONCLUDED = "CONCLUDED"
 
 
 class User:
@@ -46,7 +58,7 @@ class Team:
     def __init__(self, team_name: str):
         self.team_name = team_name
         self.roster: list[Player] = []
-        self.captain = None
+        self.captain: Player | None = None
 
     def __str__(self):
         return f"Team name: {self.team_name}"
@@ -85,19 +97,19 @@ class Team:
         return None
 
     def add_player(self, actor: User | Player, player: Player):
-        """Guarded method: Only Captains can add players"""
-        if not self.is_captain(actor):
+        """Guarded method: Only Captains and Administrators can add players"""
+        if not self.is_captain(actor) and not check_admin(actor):
             raise PermissionError(f"You do not have permission to add players")
 
         if not self.check_in_team(player):
             self.roster.append(player)
-            print(f"{player} was Successfully Added!")
+            return f"Player was Successfully added"
         else:
             raise ValueError(f"{player} is already in the team!")
 
     def remove_player(self,actor: User | Player, player: Player) -> None:
         """Guarded method: Only Captains can remove players"""
-        if not self.is_captain(actor) or check_admin(actor):
+        if not self.is_captain(actor) and not check_admin(actor):
             raise PermissionError(f"You do not have permission to remove players")
 
         for team_member in self.roster:
@@ -117,7 +129,7 @@ class Team:
 
     def appoint_team_captain(self, actor: User | Player, target_player: Player):
         """Guarded method: Only Captains or Administrators can change team Settings"""
-        if not self.is_captain(actor) or check_admin(actor):
+        if not self.is_captain(actor) and not check_admin(actor):
             raise PermissionError(f"You do not have Permission to appoint captains!")
 
         if not self.check_in_team(target_player):
@@ -139,13 +151,14 @@ class Team:
 
 
 class League:
-    def __init__(self, league_name: str, league_size: int):
+    def __init__(self, league_name: str, league_size: int, sport: str):
         self.league_name = league_name
         self.league_size = league_size
-        self.status = League.LeagueStatus.REGISTERING
+        self.status = LeagueStatus.REGISTERING
         self.matches: list[League.Match] = []
-        self.registered_match_officials : list[MatchOfficial] = []
+        self._registered_match_officials : list[MatchOfficial] = [MatchOfficial("Jerry Cooper")]
         self.teams: list[Team] = []
+        self.sport = sport.capitalize()
 
 
     def populate_league(self, deficit: int):
@@ -167,24 +180,32 @@ class League:
 
         return False
 
+    @property
+    def fetchOfficials(self):
+        for o in self._registered_match_officials:
+            yield o
 
-    def update_league_status(self, new_status):
-        pass
+    def update_league_status(self, actor: User, new_status: LeagueStatus):
+        """Guarded method: To prevent regular users from changing League States"""
+        if not check_admin(actor):
+            raise PermissionError(f"Only Administrators can modify League State!")
+
+        if not isinstance(new_status, LeagueStatus):
+            raise TypeError(f"Expected Type LeagueStatus got type {type(new_status)}")
 
 
-    class LeagueStatus(StrEnum):
-        REGISTERING = "REGISTERING"
-        REGISTERED = "REGISTERED"
-        ACTIVE = "ACTIVE"
-        CONCLUDED = "CONCLUDED"
+    def is_registered_official(self, official: MatchOfficial):
+            """
+            Helper method: To encapsulate check for REGISTERED Match Officials
+            Note: ONLY match officials that have been explicitly included in a League's Match Official list are deemed REGISTERED!
+            """
+            if official in self.fetchOfficials:
+                return True
+            else:
+                raise False
 
     class Match:
         match_ids: list[int] = []
-
-        class MatchStatus(StrEnum):
-            PENDING = "PENDING"
-            ACTIVE = "ACTIVE"
-            CONCLUDED = "CONCLUDED"
 
         def __init__(self, home_team: Team, away_team: Team, container_league: League):
             self.home_team = home_team
@@ -192,7 +213,7 @@ class League:
             self.container_league = container_league
             self.match_id = self.generate_match_id()
 
-            self.match_status = League.Match.MatchStatus.PENDING
+            self.match_status = MatchStatus.PENDING
             self.match_location = ""
             self.match_datetime = ""
             self.start_time = ""
@@ -214,7 +235,7 @@ class League:
         def generate_match_id(self) -> str:
             unique_match_index: int = len(League.Match.match_ids) + 1
             match_team_acr: str = self.home_team.team_name[0] + self.away_team.team_name[0]
-            match_league_acr: str = self.league_name
+            match_league_acr: str = self.container_league.league_name.strip().replace(" ", "").replace("eague", "")
 
             match_id = f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
             return match_id
@@ -226,16 +247,6 @@ class League:
             # match_id= f"{match_team_acr[1:5]}{match_league_acr.strip()}{unique_match_index[0:2]}"
             # return match_id
 
-        def is_registered_official(self, official: MatchOfficial):
-            """
-            Helper method: To encapsulate check for REGISTERED Match Officials
-            Note: ONLY match officials that have been explicitly included in a League's Match Official list are deemed REGISTERED!
-            """
-            if type(official) == MatchOfficial and official in League.registered_match_officials:
-                return True
-            else:
-                raise False
-
 
         def appoint_officials(self, actor: User, *args: MatchOfficial):
             """Guarded method: Only Registered Administrators can appoint Match Officials """
@@ -243,7 +254,7 @@ class League:
                 raise PermissionError(f"Only Registered Administrators can appoint Match Officials")
 
             for official in args:
-                if not self.is_registered_official(official):
+                if not self.container_league.is_registered_official(official):
                     raise ValueError(f"{official.user_name} is not a registered Official")
 
                 self.match_officials.append(official)
@@ -311,6 +322,6 @@ class League:
                     print(f"Invalid Input")
 
 
-def check_admin(actor):
+def check_admin(actor)-> bool :
     """Helper method: To encapsulate Admin check"""
     return actor.is_admin
