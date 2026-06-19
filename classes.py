@@ -34,15 +34,15 @@ class Player(User):
         self._teams: list[Team] = []
 
     def __str__(self):
-        return f"{super().user_name}"
+        return f"{self.user_name}"
 
     def __repr__(self):
-        return f"Player name:{super().user_name}\n Position: {super().user_name}\n"
+        return f"Player name:{self.user_name}\n Position: {self.user_name}\n"
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, Player):
             return False
-        return super().user_name == other.user_name and self.position == other.position
+        return self.user_name == other.user_name and self.position == other.position
 
 
 
@@ -51,8 +51,12 @@ class MatchOfficial(User):
         super().__init__(match_official_name, is_admin = False)
 
     def __str__(self):
-        return f"Match official name:{super().user_name}"
+        return f"Match official name:{self.user_name}"
 
+    def __eq__(self, other)-> bool:
+        if not isinstance(other, MatchOfficial):
+            return False
+        return self.user_name == other.user_name
 
 class Team:
     def __init__(self, team_name: str):
@@ -136,6 +140,7 @@ class Team:
             raise ValueError(f"Target Player {target_player} Not in Roster!")
         else:
             self.captain = target_player
+            return f"Successful"
 
 
     class Formation:
@@ -156,7 +161,7 @@ class League:
         self.league_size = league_size
         self.status = LeagueStatus.REGISTERING
         self.matches: list[League.Match] = []
-        self._registered_match_officials : list[MatchOfficial] = [MatchOfficial("Jerry Cooper")]
+        self.registered_match_officials : list[MatchOfficial] = [MatchOfficial("Jerry Cooper")]
         self.teams: list[Team] = []
         self.sport = sport.capitalize()
 
@@ -180,10 +185,8 @@ class League:
 
         return False
 
-    @property
     def fetchOfficials(self):
-        for o in self._registered_match_officials:
-            yield o
+        return self.registered_match_officials
 
     def update_league_status(self, actor: User, new_status: LeagueStatus):
         """Guarded method: To prevent regular users from changing League States"""
@@ -194,15 +197,15 @@ class League:
             raise TypeError(f"Expected Type LeagueStatus got type {type(new_status)}")
 
 
-    def is_registered_official(self, official: MatchOfficial):
+    def is_registered_official(self, official: MatchOfficial)-> bool:
             """
             Helper method: To encapsulate check for REGISTERED Match Officials
             Note: ONLY match officials that have been explicitly included in a League's Match Official list are deemed REGISTERED!
             """
-            if official in self.fetchOfficials:
+            if official in self.fetchOfficials():
                 return True
             else:
-                raise False
+                return False
 
     class Match:
         match_ids: list[int] = []
