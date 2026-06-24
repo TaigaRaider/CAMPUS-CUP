@@ -156,7 +156,8 @@ class Team:
 
 
 class League:
-    def __init__(self, league_name: str, league_size: int, sport: str):
+    def __init__(self, league_name: str, league_size: int, sport: str, creator: User):
+        self.creator = creator if creator.is_admin == True else PermissionError(f"Not Admin")
         self.league_name = league_name
         self.league_size = league_size
         self.status = LeagueStatus.REGISTERING
@@ -164,6 +165,8 @@ class League:
         self.registered_match_officials : list[MatchOfficial] = [MatchOfficial("Jerry Cooper")]
         self.teams: list[Team] = []
         self.sport = sport.capitalize()
+        self.population_check(self.creator)
+
 
 
     def populate_league(self,actor: User, deficit: int):
@@ -175,15 +178,18 @@ class League:
             team = Team(team_name)
             self.teams.append(team)
 
-    def population_check(self, actor: User)-> bool:
+
+    def population_check(self, actor: User)-> int:
         """Helper method to encapsulate population check"""
         if len(self.teams) < self.league_size:
             if len(self.teams) == 0:
                 self.populate_league(actor, self.league_size)
-                return True
+                return self.league_size
+
             else:
                 self.populate_league(actor, self.league_size - len(self.teams))
-                return True
+                return self.league_size
+
         elif len(self.teams) == self.league_size:
             return True
 
@@ -192,14 +198,16 @@ class League:
     def fetchOfficials(self):
         return self.registered_match_officials
 
-    def update_league_status(self, actor: User, new_status: LeagueStatus):
+    def update_league_status(self, actor: User, new_status: str):
         """Guarded method: To prevent regular users from changing League States"""
         if not check_admin(actor):
             raise PermissionError(f"Only Administrators can modify League State!")
 
-        if not isinstance(new_status, LeagueStatus):
-            raise TypeError(f"Expected Type LeagueStatus got type {type(new_status)}")
-
+        for state in LeagueStatus:
+            if state.value == new_status:
+                self.status = new_status
+                return "Done"
+        return f"Chosen state not Valid"
 
     def is_registered_official(self, official: MatchOfficial)-> bool:
             """
@@ -329,6 +337,6 @@ class League:
                     print(f"Invalid Input")
 
 
-def check_admin(actor)-> bool :
+def check_admin(actor: User)-> bool :
     """Helper method: To encapsulate Admin check"""
     return actor.is_admin
