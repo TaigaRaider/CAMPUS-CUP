@@ -157,7 +157,7 @@ class Team:
 
 class League:
     def __init__(self, league_name: str, league_size: int, sport: str, creator: User):
-        self.creator = creator if creator.is_admin == True else PermissionError(f"Not Admin")
+        self.creator = creator
         self.league_name = league_name
         self.league_size = league_size
         self.status = LeagueStatus.REGISTERING
