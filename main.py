@@ -25,13 +25,13 @@ def main():
 
     team1.remove_player(player4, player1)
 
-    league = League("Premier League", 5, "football", user_admin1)
+    league = League("Premier League", 2, "football", user_admin1)
     league.teams.append(team1)
     print(league.is_registered_official(official1))
 
     match1 = league.Match(team1, team2, league)
     print(league.update_league_status(actor=user_admin1, new_status="REGISTERED"))
-    print(league.status)
+    print(league.check_league_status())
 
     print(team1)
 if __name__ == '__main__':
