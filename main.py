@@ -6,25 +6,25 @@ def main():
 
     official1 = MatchOfficial("Jerry Cooper")
 
-    player1 = Player("Jay", "RW", False)
-    player2 = Player("Jordan", "LW", False)
-    player3 = Player("Jack", "CF", False)
-    player4 = Player("TestCap", "RB", False)
+    player1 = Player("Jay", "RW")
+    player2 = Player("Jordan", "LW")
+    player3 = Player("Jack", "CF")
+    player4 = Player("TestCap", "RB")
 
     team1 = Team("Juggernaut FC")
     team2 = Team("Liverpool FC")
 
     team1.add_player(user_admin1, player4)
+    team1.add_player(user_admin1, player1)
 
     print(team1.appoint_team_captain(user_admin1, player4))
 
-    team1.add_player(player4, player1)
     team1.add_player(player4, player2)
     team1.add_player(player4, player3)
 
     team1.remove_player(player4, player1)
 
-    league = League("Premier League", 5, "football", player4)
+    league = League("Premier League", 5, "football", user_admin1)
     league.teams.append(team1)
     print(league.is_registered_official(official1))
 

@@ -6,11 +6,13 @@ from rich.prompt import Prompt
 
 from enum import StrEnum
 
+
 class LeagueStatus(StrEnum):
     REGISTERING = "REGISTERING"
     REGISTERED = "REGISTERED"
     ACTIVE = "ACTIVE"
     CONCLUDED = "CONCLUDED"
+
 
 class MatchStatus(StrEnum):
     PENDING = "PENDING"
@@ -28,7 +30,7 @@ class User:
 
 
 class Player(User):
-    def __init__(self, player_name: str, position: str, is_admin):
+    def __init__(self, player_name: str, position: str, is_admin = False):
         super().__init__(player_name, is_admin)
         self.position = position
         self._teams: list[Team] = []
@@ -45,24 +47,24 @@ class Player(User):
         return self.user_name == other.user_name and self.position == other.position
 
 
-
 class MatchOfficial(User):
     def __init__(self, match_official_name: str):
-        super().__init__(match_official_name, is_admin = False)
+        super().__init__(match_official_name, is_admin=False)
 
     def __str__(self):
         return f"Match official name:{self.user_name}"
 
-    def __eq__(self, other)-> bool:
+    def __eq__(self, other) -> bool:
         if not isinstance(other, MatchOfficial):
             return False
         return self.user_name == other.user_name
+
 
 class Team:
     def __init__(self, team_name: str):
         self.team_name = team_name
         self.roster: list[Player] = []
-        self.captain: Player | None = None
+        self.captain: Player = Player("Null", "Null")
 
     def __str__(self):
         return f"Team name: {self.team_name}"
@@ -81,7 +83,7 @@ class Team:
             return False
         return self.team_name == other.team_name
 
-    def is_captain(self, player: Player)-> bool:
+    def is_captain(self, player: User | Player) -> bool:
         """Helper method to encapsulate captaincy check"""
         return player == self.captain
 
@@ -111,7 +113,7 @@ class Team:
         else:
             raise ValueError(f"{player} is already in the team!")
 
-    def remove_player(self,actor: User | Player, player: Player) -> None:
+    def remove_player(self, actor: User | Player, player: Player) -> None:
         """Guarded method: Only Captains can remove players"""
         if not self.is_captain(actor) and not check_admin(actor):
             raise PermissionError(f"You do not have permission to remove players")
@@ -142,7 +144,6 @@ class Team:
             self.captain = target_player
             return f"Successful"
 
-
     class Formation:
         def __init__(self, formation_name: str, use_case: str):
             self.formation_name = formation_name
@@ -162,24 +163,22 @@ class League:
         self.league_size = league_size
         self.status = LeagueStatus.REGISTERING
         self.matches: list[League.Match] = []
-        self.registered_match_officials : list[MatchOfficial] = [MatchOfficial("Jerry Cooper")]
+        self.registered_match_officials: list[MatchOfficial] = [MatchOfficial("Jerry Cooper")]
         self.teams: list[Team] = []
         self.sport = sport.capitalize()
         self.population_check(self.creator)
 
-
-
-    def populate_league(self,actor: User, deficit: int):
+    def populate_league(self, actor: User, deficit: int):
         """Guarded method: Only Administrators can manage League states"""
         if not check_admin(actor):
             raise PermissionError(f"Only Administrators can manage league states")
         for i in range(deficit):
-            team_name = Prompt.ask(f"Enter the name of the team #{i+1}")
+            team_name = Prompt.ask(f"Enter the name of the team #{i + 1}")
             team = Team(team_name)
             self.teams.append(team)
+            self.update_league_status(actor, new_status="REGISTERED")
 
-
-    def population_check(self, actor: User)-> int:
+    def population_check(self, actor: User) -> int:
         """Helper method to encapsulate population check"""
         if len(self.teams) < self.league_size:
             if len(self.teams) == 0:
@@ -209,15 +208,15 @@ class League:
                 return "Done"
         return f"Chosen state not Valid"
 
-    def is_registered_official(self, official: MatchOfficial)-> bool:
-            """
+    def is_registered_official(self, official: MatchOfficial) -> bool:
+        """
             Helper method: To encapsulate check for REGISTERED Match Officials
             Note: ONLY match officials that have been explicitly included in a League's Match Official list are deemed REGISTERED!
             """
-            if official in self.fetchOfficials():
-                return True
-            else:
-                return False
+        if official in self.fetchOfficials():
+            return True
+        else:
+            return False
 
     class Match:
         match_ids: list[int] = []
@@ -262,7 +261,6 @@ class League:
             # match_id= f"{match_team_acr[1:5]}{match_league_acr.strip()}{unique_match_index[0:2]}"
             # return match_id
 
-
         def appoint_officials(self, actor: User, *args: MatchOfficial):
             """Guarded method: Only Registered Administrators can appoint Match Officials """
             if not check_admin(actor):
@@ -273,7 +271,6 @@ class League:
                     raise ValueError(f"{official.user_name} is not a registered Official")
 
                 self.match_officials.append(official)
-
 
         def end_match(self):
             pass
@@ -294,11 +291,10 @@ class League:
             """Query schedule and check if a match is holding at the newly selected date time and venue"""
 
             if self.match_status != "COMPLETED":
-                new_time = Prompt.ask(f"Enter a new match date and time in the order DD-MM-YYYY HH:MM" )
+                new_time = Prompt.ask(f"Enter a new match date and time in the order DD-MM-YYYY HH:MM")
                 self.match_datetime = new_time
 
             """if none, assign match to new date"""
-
 
     class RuleSet:
         ruleSet: dict = {
@@ -337,6 +333,11 @@ class League:
                     print(f"Invalid Input")
 
 
-def check_admin(actor: User)-> bool :
+def check_admin(actor: User) -> bool:
     """Helper method: To encapsulate Admin check"""
-    return actor.is_admin
+    return actor.is_admin == True
+
+A = True
+B = False
+if not A and not B:
+    print("This is the effect of the not operator on True")
