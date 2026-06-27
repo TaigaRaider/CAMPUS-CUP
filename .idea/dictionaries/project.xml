@@ -2,6 +2,12 @@
   <dictionary name="project">
     <words>
       <w>eague</w>
+      <w>leagueids</w>
+      <w>matchids</w>
+      <w>officialids</w>
+      <w>playerids</w>
+      <w>teamids</w>
+      <w>userids</w>
     </words>
   </dictionary>
 </component>

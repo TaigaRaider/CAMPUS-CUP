@@ -1,9 +1,13 @@
 from __future__ import annotations
 import time
 
+import random
+import string
+import os
+
 from rich.progress import track
 from rich.prompt import Prompt
-
+from copy import deepcopy
 from enum import StrEnum
 
 
@@ -20,10 +24,41 @@ class MatchStatus(StrEnum):
     CONCLUDED = "CONCLUDED"
 
 
+def check_id_exists(target_id: str, filename: str) -> bool:
+    """Helper method: Checks if a similar ID exists within the target ID file in the directory."""
+    file_path = os.path.join("ids", filename)
+    if not os.path.exists(file_path):
+        return False
+    
+    with open(file_path, "r") as f:
+        existing_ids = f.read().splitlines()
+        return target_id in existing_ids
+
+def save_id(target_id: str, filename: str, name: str):
+    """Helper method: Saves the unique ID to the target ID file in the directory."""
+    if not os.path.exists("ids"):
+        os.makedirs("ids")
+        
+    file_path = os.path.join("ids", filename)
+
+    with open(file_path, "a") as f:
+        f.write(f"{name}: {target_id}\n")
+
 class User:
     def __init__(self, user_name: str, is_admin: bool):
         self.user_name = user_name
         self.is_admin = is_admin
+        self.user_id = self.generate_user_id()
+
+    def generate_user_id(self) -> str:
+        while True:
+            prefix = "ADM" if self.is_admin else "USR"
+            random_part = ''.join(random.choices(string.ascii_uppercase + string.digits, k=5))
+            new_id = f"{prefix}-{random_part}"
+
+            if not check_id_exists(new_id, "userids"):
+                save_id(new_id, "userids", self.user_name)
+                return new_id
 
     def __str__(self):
         return self.user_name
@@ -34,6 +69,18 @@ class Player(User):
         super().__init__(player_name, is_admin)
         self.position = position
         self._teams: list[Team] = []
+        self.user_id = self.generate_player_id()
+
+    def generate_player_id(self) -> str:
+        while True:
+            prefix = "ADM" if self.is_admin else "PLR"
+            random_part = "".join(random.choices(string.digits, k=6))
+            new_id = f"{prefix}-{random_part}"
+            
+            if not check_id_exists(new_id, "playerids"):
+                save_id(new_id, "playerids", self.user_name)
+                return new_id
+    
 
     def __str__(self):
         return f"{self.user_name}"
@@ -50,6 +97,17 @@ class Player(User):
 class MatchOfficial(User):
     def __init__(self, match_official_name: str):
         super().__init__(match_official_name, is_admin=False)
+        self.user_id = self.generate_official_id()
+
+    def generate_official_id(self) -> str:
+        while True:
+            prefix = "OFF"
+            random_part = ''.join(random.choices(string.digits, k=6))
+            new_id = f"{prefix}-{random_part}"
+
+            if not check_id_exists(new_id, "officialids"):
+                save_id(new_id, "officialids",self.user_name)
+                return new_id
 
     def __str__(self):
         return f"Match official name:{self.user_name}"
@@ -63,8 +121,18 @@ class MatchOfficial(User):
 class Team:
     def __init__(self, team_name: str):
         self.team_name = team_name
+        self.team_id = self.generate_team_id()
         self.roster: list[Player] = []
         self.captain: Player = Player("Null", "Null")
+
+    def generate_team_id(self) -> str:
+        while True:
+            initials = "".join([word[0].upper() for word in self.team_name.split()])[:3]
+            random_part = ''.join(random.choices(string.digits, k=4))
+            new_id = f"TM-{initials}-{random_part}"
+            if not check_id_exists(new_id, "teamids"):
+                save_id(new_id, "teamids", self.team_name)
+                return new_id
 
     def __str__(self):
         return f"Team name: {self.team_name}"
@@ -105,6 +173,7 @@ class Team:
     def add_player(self, actor: User | Player, player: Player):
         """Guarded method: Only Captains and Administrators can add players"""
         if not self.is_captain(actor) and not check_admin(actor):
+            #This line ensures that both condition return not(False)= True before executing the next block
             raise PermissionError(f"You do not have permission to add players")
 
         if not self.check_in_team(player):
@@ -160,6 +229,7 @@ class League:
     def __init__(self, league_name: str, league_size: int, sport: str, creator: User):
         self.creator = creator
         self.league_name = league_name
+        self.league_id = self.generate_league_id()
         self.league_size = league_size
         self.status = LeagueStatus.REGISTERING
         self.matches: list[League.Match] = []
@@ -167,6 +237,16 @@ class League:
         self.teams: list[Team] = []
         self.sport = sport.capitalize()
         self.population_check(self.creator)
+
+    def generate_league_id(self) -> str:
+        while True:
+            initials = "".join([word[0].upper() for word in self.league_name.split()])[:3]
+            year = time.strftime("%Y")
+            random_part = ''.join(random.choices(string.ascii_uppercase, k=3))
+            new_id = f"LG-{initials}-{year}-{random_part}"
+            if not check_id_exists(new_id, "leagueids"):
+                save_id(new_id, "leagueids", self.league_name)
+                return new_id
 
     def populate_league(self, actor: User, deficit: int):
         """Guarded method: Only Administrators can manage League states"""
@@ -247,12 +327,16 @@ class League:
             pass
 
         def generate_match_id(self) -> str:
-            unique_match_index: int = len(League.Match.match_ids) + 1
-            match_team_acr: str = self.home_team.team_name[0] + self.away_team.team_name[0]
-            match_league_acr: str = self.container_league.league_name.strip().replace(" ", "").replace("eague", "")
+            while True:
+                unique_match_index: int = len(self.container_league.matches) + 1
+                home_acr = self.home_team.team_name[:2].upper()
+                away_acr = self.away_team.team_name[:2].upper()
+                league_acr = "".join([word[0].upper() for word in self.container_league.league_name.split()])[:3]
 
-            match_id = f"{match_team_acr}{match_league_acr}{unique_match_index:2}"
-            return match_id
+                new_id = f"MCH-{league_acr}-{home_acr}{away_acr}-{unique_match_index:03d}"
+                if not check_id_exists(new_id, "matchids"):
+                    save_id(new_id, "matchids", "")
+                    return new_id
 
             # unique_match_index: str = str(len(League.Match.match_ids) + 1)
             # match_team_acr: str = str(self.home_team.__hash__()) + str(self.away_team.__hash__())
@@ -294,7 +378,6 @@ class League:
                 new_time = Prompt.ask(f"Enter a new match date and time in the order DD-MM-YYYY HH:MM")
                 self.match_datetime = new_time
 
-            """if none, assign match to new date"""
 
     class RuleSet:
         ruleSet: dict = {
@@ -304,7 +387,7 @@ class League:
             "OFFENCE": ""
         }
 
-        temp_ruleSet = ruleSet.copy()
+        temp_ruleSet = deepcopy(ruleSet)
 
         def __init__(self, ruleset_name: str):
             self.ruleset_name = ruleset_name
@@ -337,7 +420,3 @@ def check_admin(actor: User) -> bool:
     """Helper method: To encapsulate Admin check"""
     return actor.is_admin == True
 
-A = True
-B = False
-if not A and not B:
-    print("This is the effect of the not operator on True")
