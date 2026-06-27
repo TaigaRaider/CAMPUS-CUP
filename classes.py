@@ -119,11 +119,12 @@ class MatchOfficial(User):
 
 
 class Team:
-    def __init__(self, team_name: str):
+    def __init__(self, team_name: str, captain: Player):
         self.team_name = team_name
         self.team_id = self.generate_team_id()
         self.roster: list[Player] = []
-        self.captain: Player = Player("Null", "Null")
+        self.captain: Player = captain
+
 
     def generate_team_id(self) -> str:
         while True:
@@ -231,7 +232,7 @@ class League:
         self.league_name = league_name
         self.league_id = self.generate_league_id()
         self.league_size = league_size
-        self.status = LeagueStatus.REGISTERING
+        self._status = LeagueStatus.REGISTERING
         self.matches: list[League.Match] = []
         self.registered_match_officials: list[MatchOfficial] = [MatchOfficial("Jerry Cooper")]
         self.teams: list[Team] = []
@@ -250,11 +251,21 @@ class League:
 
     def populate_league(self, actor: User, deficit: int):
         """Guarded method: Only Administrators can manage League states"""
+
         if not check_admin(actor):
             raise PermissionError(f"Only Administrators can manage league states")
+        if self.check_league_status() != LeagueStatus.REGISTERING:
+            raise ValueError(f"League is not in the REGISTERING state!")
+
+        if deficit < 0:
+            raise ValueError(f"League size cannot be negative!")
+
         for i in range(deficit):
             team_name = Prompt.ask(f"Enter the name of the team #{i + 1}")
-            team = Team(team_name)
+            captain_name = Prompt.ask(f"Enter the name of the captain of team #{i + 1}")
+            captain_position = Prompt.ask(f"Enter the position of the captain of team #{i + 1}")
+
+            team = Team(team_name, Player(captain_name, captain_position))
             self.teams.append(team)
             self.update_league_status(actor, new_status="REGISTERED")
 
@@ -266,8 +277,14 @@ class League:
                 return self.league_size
 
             else:
-                self.populate_league(actor, self.league_size - len(self.teams))
+                self.populate_league(actor, (self.league_size - len(self.teams)))
                 return self.league_size
+
+        elif len(self.teams) > self.league_size:
+            self.teams= []
+            self.populate_league(actor, self.league_size)
+
+            raise ValueError(f"League size cannot exceed {self.league_size}!")
 
         elif len(self.teams) == self.league_size:
             return True
@@ -284,7 +301,7 @@ class League:
 
         for state in LeagueStatus:
             if state.value == new_status:
-                self.status = new_status
+                self._status = new_status
                 return "Done"
         return f"Chosen state not Valid"
 
@@ -414,6 +431,9 @@ class League:
 
                 case _:
                     print(f"Invalid Input")
+
+    def check_league_status(self):
+        return self._status
 
 
 def check_admin(actor: User) -> bool:
